@@ -15,6 +15,11 @@
 # [START gae_python37_app]
 from flask import Flask, render_template
 
+# Imports the Google Cloud client library
+from google.cloud import language
+from google.cloud.language import enums
+from google.cloud.language import types
+
 
 # If `entrypoint` is not defined in app.yaml, App Engine will look for an app
 # called `app` in `main.py`.
@@ -24,8 +29,23 @@ app = Flask(__name__)
 @app.route('/')
 def hello():
     """Return a friendly HTTP greeting."""
-    return render_template('myview.html')
-    #return 'Hello World!!!!'
+    text = u'Hello Adam!'
+    return getEntities(text)
+
+
+def getEntities(text):
+    # Instantiates a client
+    client = language.LanguageServiceClient()
+
+    document = types.Document(
+        content=text,
+        type=enums.Document.Type.PLAIN_TEXT)
+
+    # Get entities in text
+    entities = client.analyze_entities(document=document, encoding_type='UTF32').entities
+
+    entityStr = 'name: {0}'.format(entities[0].name) + ' type: {0}'.format(entities[0].type)
+    return entityStr
 
 
 if __name__ == '__main__':
