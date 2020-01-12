@@ -23,9 +23,11 @@ app = Flask(__name__)
 @app.route('/')
 def hello():
     """Return a friendly HTTP greeting."""
-    allLines = eg.LoadBookAndGetLines("test_story.txt")
-    matrix = eg.GetEntityGraph(allLines)
-    return str(matrix)
+    #allLines = eg.LoadBookAndGetLines("test_story.txt")
+    #allLines = eg.LoadBookAndGetLines("alice_chap1.txt")
+    #matrix = eg.GetEntityGraph(allLines)
+
+    return render_template('myview.html')
 
 if __name__ == '__main__':
     # This is used when running locally only. When deploying to Google App

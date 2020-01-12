@@ -11,9 +11,11 @@ from google.cloud.language import types
 
 import numpy as np
 
+import matplotlib
 import matplotlib.pyplot as plt
 import networkx as nx
 
+matplotlib.use('Agg')
 
 def drawGraph(matrix, adjList):
     nodes = adjList.keys()
@@ -26,7 +28,10 @@ def drawGraph(matrix, adjList):
     gr = nx.Graph()
     gr.add_edges_from(edges)
     nx.draw(gr, node_size=0, labels=indexToNode, with_labels=True)
-    plt.show()
+    #plt.show()
+    plt.savefig("plot.png")
+    plt.clf()
+    gr.clear()
 
 
 def GetEntityGraph(allLines):
@@ -36,8 +41,8 @@ def GetEntityGraph(allLines):
     adjList = defaultdict(set)
     for s in sentences:
         if s != "":
-            #related = GetEntitiesAPI(s)
-            related = GetEntitiesDummy(s)
+            related = GetEntitiesAPI(s)
+            #related = GetEntitiesDummy(s)
             adjList = SetRelations(related, adjList)
 
     matrix = makeMatrix(adjList)
