@@ -15,9 +15,19 @@ def GetEntityGraph(allLines):
         sentences.extend(line.split('.'))
     matrix = defaultdict(set)
     for s in sentences:
-        related = GetEntitiesAPI(s)
-        matrix = SetRelations(related, matrix)
+        if s != "":
+            #related = GetEntitiesAPI(s)
+            related = GetEntitiesDummy(s)
+            matrix = SetRelations(related, matrix)
     return matrix
+
+def GetEntitiesDummy(text):
+    ent_set = set()
+    words = text.split()
+    for w in words:
+        if w[0].isupper():
+            ent_set.add(w)
+    return ent_set
 
 def GetEntitiesAPI(text):
     # Instantiates a client
@@ -30,7 +40,7 @@ def GetEntitiesAPI(text):
     # Get entities in text
     entities = client.analyze_entities(document=document, encoding_type='UTF32').entities
     ent_set = set()
-    
+
     # e has e.name, e.type plus others
     for e in entities:
         if e.type in {1}:
@@ -49,7 +59,28 @@ def LoadBookAndGetLines(filename):
         allLines.extend(file.readlines())
     return allLines
 
+def PreProcessGutenbergBook(lines):
+    goodLines = []
+    beforeStart = True
+    for line in lines:
+        if ("*** START" in line):
+            beforeStart = False
+        if beforeStart or (line == "\n"):
+            continue
+        if "*** END " not in line:
+            goodLines.append(line)
+        else:
+            goodLines.pop(0)
+            return goodLines
+    return goodLines
+
 if __name__ == '__main__':
-    allLines = LoadBookAndGetLines("test_story.txt")
-    matrix = GetEntityGraph(allLines)
+    allLines = LoadBookAndGetLines("alice.txt")
+
+    # Be careful with the below! You'll want to throttle as this actually uses API credits
+    matrix = GetEntityGraph(allLines[1000:1200])
     print(matrix)
+    
+    #allLines = LoadBookAndGetLines("alice.txt")
+    #goodLines = PreProcessGutenbergBook(allLines)
+    #print(goodLines[0:20])
