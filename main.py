@@ -14,43 +14,23 @@
 
 # [START gae_python37_app]
 from flask import Flask, render_template
-
-# Imports the Google Cloud client library
-from google.cloud import language
-from google.cloud.language import enums
-from google.cloud.language import types
-
+import entgraph as eg
 
 # If `entrypoint` is not defined in app.yaml, App Engine will look for an app
 # called `app` in `main.py`.
 app = Flask(__name__)
 
-
 @app.route('/')
 def hello():
     """Return a friendly HTTP greeting."""
-    text = u'Hello Adam!'
-    return getEntities(text)
-
-
-def getEntities(text):
-    # Instantiates a client
-    client = language.LanguageServiceClient()
-
-    document = types.Document(
-        content=text,
-        type=enums.Document.Type.PLAIN_TEXT)
-
-    # Get entities in text
-    entities = client.analyze_entities(document=document, encoding_type='UTF32').entities
-
-    entityStr = 'name: {0}'.format(entities[0].name) + ' type: {0}'.format(entities[0].type)
-    return entityStr
-
+    allLines = eg.LoadBookAndGetLines("test_story.txt")
+    matrix = eg.GetEntityGraph(allLines)
+    return str(matrix)
 
 if __name__ == '__main__':
     # This is used when running locally only. When deploying to Google App
     # Engine, a webserver process such as Gunicorn will serve the app. This
     # can be configured by adding an `entrypoint` to app.yaml.
     app.run(host='127.0.0.1', port=8080, debug=True)
+
 # [END gae_python37_app]
