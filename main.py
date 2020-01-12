@@ -14,7 +14,6 @@
 
 # [START gae_python37_app]
 from flask import Flask, render_template
-#import requests
 
 # Imports the Google Cloud client library
 from google.cloud import language
