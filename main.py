@@ -30,36 +30,23 @@ app = Flask(__name__)
 @app.route('/')
 def hello():
     """Return a friendly HTTP greeting."""
-    #dictToSend = {'question':'what is the answer?'}
-    #dictToSend = {"document": {object(Document)},"encodingType": enum(EncodingType)}
-    #res = requests.post('https://language.googleapis.com/v1beta2/documents:analyzeEntities', json=dictToSend)
-    #print 'response from server:',res.text
-    #dictFromServer = res.json()
-
-    #return 'response from server:',res.text
-    #return render_template('myview.html')
-    #return 'Hello World!!!!'
-    
-    return callAPI()
+    text = u'Hello Adam!'
+    return getEntities(text)
 
 
-def callAPI():
+def getEntities(text):
     # Instantiates a client
     client = language.LanguageServiceClient()
 
-    # The text to analyze
-    text = u'Hello Adam!'
     document = types.Document(
         content=text,
         type=enums.Document.Type.PLAIN_TEXT)
 
-    # Detects the sentiment of the text
-    #sentiment = client.analyze_sentiment(document=document).document_sentiment
+    # Get entities in text
     entities = client.analyze_entities(document=document, encoding_type='UTF32').entities
 
-    #apiRet = 'Sentiment: {}, {}'.format(sentiment.score, sentiment.magnitude)
-    apiRet = 'name: {0}'.format(entities[0].name) + 'type: {0}'.format(entities[0].type)
-    return apiRet
+    entityStr = 'name: {0}'.format(entities[0].name) + ' type: {0}'.format(entities[0].type)
+    return entityStr
 
 
 if __name__ == '__main__':
