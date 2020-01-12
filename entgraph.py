@@ -4,28 +4,38 @@
 from collections import defaultdict
 from itertools import permutations
 
+# Imports the Google Cloud client library
+from google.cloud import language
+from google.cloud.language import enums
+from google.cloud.language import types
+
 def GetEntityGraph(allLines):
     sentences = []
     for line in allLines:
         sentences.extend(line.split('.'))
     matrix = defaultdict(set)
     for s in sentences:
-        related = GetEntities(s)
+        related = GetEntitiesAPI(s)
         matrix = SetRelations(related, matrix)
     return matrix
 
-def GetEntities(sentence):
-    # Dummy version below ===================
-    words = sentence.split()
-    entities = []
-    for word in words:
-       if word[0].isupper():
-           entities.append(word)
+def GetEntitiesAPI(text):
+    # Instantiates a client
+    client = language.LanguageServiceClient()
 
-    # API Call below ========================
-    #entities = []
+    document = types.Document(
+        content=text,
+        type=enums.Document.Type.PLAIN_TEXT)
 
-    return entities
+    # Get entities in text
+    entities = client.analyze_entities(document=document, encoding_type='UTF32').entities
+    ent_set = set()
+    
+    # e has e.name, e.type plus others
+    for e in entities:
+        if e.type in {1}:
+            ent_set.add(e.name)
+    return ent_set
 
 def SetRelations(related, matrix):
     for (u,v) in permutations(related,2):

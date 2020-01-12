@@ -26,7 +26,6 @@ def hello():
     allLines = eg.LoadBookAndGetLines("test_story.txt")
     matrix = eg.GetEntityGraph(allLines)
     return str(matrix)
-    #return 'Hello World!!!!'
 
 if __name__ == '__main__':
     # This is used when running locally only. When deploying to Google App
