@@ -9,17 +9,62 @@ from google.cloud import language
 from google.cloud.language import enums
 from google.cloud.language import types
 
+import numpy as np
+
+import matplotlib.pyplot as plt
+import networkx as nx
+
+
+def drawGraph(matrix, adjList):
+    nodes = adjList.keys()
+    indexToNode = {}
+    for i, node in enumerate(nodes):
+        indexToNode[i] = node
+
+    rows, cols = np.where(matrix == 1)
+    edges = zip(rows.tolist(), cols.tolist())
+    gr = nx.Graph()
+    gr.add_edges_from(edges)
+    nx.draw(gr, node_size=0, labels=indexToNode, with_labels=True)
+    plt.show()
+
+
 def GetEntityGraph(allLines):
     sentences = []
     for line in allLines:
         sentences.extend(line.split('.'))
-    matrix = defaultdict(set)
+    adjList = defaultdict(set)
     for s in sentences:
         if s != "":
             #related = GetEntitiesAPI(s)
             related = GetEntitiesDummy(s)
-            matrix = SetRelations(related, matrix)
+            adjList = SetRelations(related, adjList)
+
+    matrix = makeMatrix(adjList)
+    drawGraph(matrix, adjList)
+
+    return adjList
+
+
+def makeMatrix(adjList):
+    numEnts = len(adjList)
+    nodes = adjList.keys()
+
+    nodeToIndex = {}
+    i = 0
+    for node in nodes:
+        nodeToIndex[node] = i
+        i = i + 1
+
+    matrix = np.zeros((numEnts, numEnts))
+
+    for node in nodes:
+        for neigh in adjList[node]:
+            nodeIndex = nodeToIndex[node]
+            neighIndex = nodeToIndex[neigh]
+            matrix[nodeIndex][neighIndex] = 1
     return matrix
+
 
 def GetEntitiesDummy(text):
     ent_set = set()
@@ -28,6 +73,7 @@ def GetEntitiesDummy(text):
         if w[0].isupper():
             ent_set.add(w)
     return ent_set
+
 
 def GetEntitiesAPI(text):
     # Instantiates a client
@@ -47,17 +93,20 @@ def GetEntitiesAPI(text):
             ent_set.add(e.name)
     return ent_set
 
-def SetRelations(related, matrix):
+
+def SetRelations(related, adjList):
     for (u,v) in permutations(related,2):
         if u != v:
-            matrix[u].add(v)
-    return matrix
+            adjList[u].add(v)
+    return adjList
+
 
 def LoadBookAndGetLines(filename):
     allLines = []
     with open(filename, 'r') as file:
         allLines.extend(file.readlines())
     return allLines
+
 
 def PreProcessGutenbergBook(lines):
     goodLines = []
@@ -74,12 +123,12 @@ def PreProcessGutenbergBook(lines):
             return goodLines
     return goodLines
 
+
 if __name__ == '__main__':
     allLines = LoadBookAndGetLines("alice.txt")
 
     # Be careful with the below! You'll want to throttle as this actually uses API credits
-    matrix = GetEntityGraph(allLines[1000:1200])
-    print(matrix)
+    adjList = GetEntityGraph(allLines[1000:1200])
     
     #allLines = LoadBookAndGetLines("alice.txt")
     #goodLines = PreProcessGutenbergBook(allLines)
