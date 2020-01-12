@@ -14,6 +14,12 @@
 
 # [START gae_python37_app]
 from flask import Flask, render_template
+#import requests
+
+# Imports the Google Cloud client library
+from google.cloud import language
+from google.cloud.language import enums
+from google.cloud.language import types
 
 
 # If `entrypoint` is not defined in app.yaml, App Engine will look for an app
@@ -24,8 +30,36 @@ app = Flask(__name__)
 @app.route('/')
 def hello():
     """Return a friendly HTTP greeting."""
-    return render_template('myview.html')
+    #dictToSend = {'question':'what is the answer?'}
+    #dictToSend = {"document": {object(Document)},"encodingType": enum(EncodingType)}
+    #res = requests.post('https://language.googleapis.com/v1beta2/documents:analyzeEntities', json=dictToSend)
+    #print 'response from server:',res.text
+    #dictFromServer = res.json()
+
+    #return 'response from server:',res.text
+    #return render_template('myview.html')
     #return 'Hello World!!!!'
+    
+    return callAPI()
+
+
+def callAPI():
+    # Instantiates a client
+    client = language.LanguageServiceClient()
+
+    # The text to analyze
+    text = u'Hello Adam!'
+    document = types.Document(
+        content=text,
+        type=enums.Document.Type.PLAIN_TEXT)
+
+    # Detects the sentiment of the text
+    #sentiment = client.analyze_sentiment(document=document).document_sentiment
+    entities = client.analyze_entities(document=document, encoding_type='UTF32').entities
+
+    #apiRet = 'Sentiment: {}, {}'.format(sentiment.score, sentiment.magnitude)
+    apiRet = 'name: {0}'.format(entities[0].name) + 'type: {0}'.format(entities[0].type)
+    return apiRet
 
 
 if __name__ == '__main__':
